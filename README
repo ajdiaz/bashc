@@ -1,0 +1,74 @@
+ ▄▄▄▄▄▄▄▄▄▄   ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄         ▄  ▄▄▄▄▄▄▄▄▄▄▄
+▐░░░░░░░░░░▌ ▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░▌       ▐░▌▐░░░░░░░░░░░▌
+▐░█▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀▀▀ ▐░▌       ▐░▌▐░█▀▀▀▀▀▀▀▀▀
+▐░▌       ▐░▌▐░▌       ▐░▌▐░▌          ▐░▌       ▐░▌▐░▌
+▐░█▄▄▄▄▄▄▄█░▌▐░█▄▄▄▄▄▄▄█░▌▐░█▄▄▄▄▄▄▄▄▄ ▐░█▄▄▄▄▄▄▄█░▌▐░▌
+▐░░░░░░░░░░▌ ▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░▌
+▐░█▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀█░▌ ▀▀▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀█░▌▐░▌
+▐░▌       ▐░▌▐░▌       ▐░▌          ▐░▌▐░▌       ▐░▌▐░▌
+▐░█▄▄▄▄▄▄▄█░▌▐░▌       ▐░▌ ▄▄▄▄▄▄▄▄▄█░▌▐░▌       ▐░▌▐░█▄▄▄▄▄▄▄▄▄
+▐░░░░░░░░░░▌ ▐░▌       ▐░▌▐░░░░░░░░░░░▌▐░▌       ▐░▌▐░░░░░░░░░░░▌
+ ▀▀▀▀▀▀▀▀▀▀   ▀         ▀  ▀▀▀▀▀▀▀▀▀▀▀  ▀         ▀  ▀▀▀▀▀▀▀▀▀▀▀
+
+
+BashC is a tool which get your bash script and produces an static linked
+binary for Linux x86 and x86_64 machines (also support ARM and many other
+OS, but I cannot test them yet) which runs your script.
+
+For example:
+
+  $ cat > myscript.sh << EOF
+  #!/bin/bash
+  echo "This is a test
+  EOF
+
+  $ bashc myscript.sh myscript.bin
+  $ file myscript.bin
+  bashc: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically
+  linked, stripped
+  $ ./myscript.bin
+  This is a test
+
+Nice eh!
+
+
+---- Installation --------------------------------------------------------
+
+From source code just run:
+
+  make
+
+Easy :)
+
+---- Internals ----------------------------------------------------------
+
+This application is based on previous work from Robert Xu¹, which uses musl
+instead of glibc avoiding calls to dlopen(3) to produce a static binary.
+
+I added some patches (in patch/ directory) to convert the bash binary in
+a compiler tool. The patch does the following:
+
+1. Read he filesize of itself and jump (lseek) to the last byte of the
+   binary.
+2. There read -20 chars as decimal number which represents the length of the
+   script to be executed
+3. Jump again (lseek) to END - length readed in (2)
+4. Bash interpret the code in current fd position.
+
+That is how bashc runs a script. To create the binary just concatenate to the
+static patched bash, the script to run. Because of ELF header (and in theory
+also Match) ensure us that execution will never reads after lenght scecified
+in ELF header, then our script still safe after that position. During the
+execution the algorithm explained above is running and the script is
+interpreted.
+
+
+¹ https://github.com/robxu9/bash-static
+
+---- Limitations --------------------------------------------------------
+
+* Not tested in any other platform than Linux X86 and X86_64.
+* The bash script code is concatenated in plain text, so no security here.
+* We cannot use any external dependency for the script unless it was
+  previously compiled as builtin.
+
