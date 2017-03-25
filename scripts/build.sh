@@ -5,8 +5,8 @@
 #
 # For Linux, also builds musl for truly static linking.
 
-bash_version="4.3"
-bash_patch_level=43
+bash_version="4.4"
+bash_patch_level=12
 musl_version="1.1.15"
 
 platform=$(uname -s)
@@ -33,9 +33,9 @@ echo "= patching bash"
 bash_patch_prefix=$(echo "bash${bash_version}" | sed -e 's/\.//g')
 pushd bash-${bash_version}
 for lvl in $(seq $bash_patch_level); do
-    curl -L http://ftp.gnu.org/gnu/bash/bash-${bash_version}-patches/${bash_patch_prefix}-$(printf '%03d' $lvl) | patch -p0
+    curl -L "http://ftp.gnu.org/gnu/bash/bash-${bash_version}-patches/${bash_patch_prefix}-$(printf '%03d' "$lvl")" | patch -p0
 done
-patch -p0 < ../../patch/hack.diff
+patch -p0 < "../../patch/hack-${bash_version}.diff"
 popd
 
 if [[ "$platform" = "Linux" ]]; then
@@ -51,7 +51,7 @@ if [[ "$platform" = "Linux" ]]; then
   install_dir=${working_dir}/musl-install
 
   pushd musl-${musl_version}
-  ./configure --prefix=${install_dir}
+  ./configure "--prefix=${install_dir}"
   make install
   popd # musl-${musl-version}
 
@@ -86,7 +86,7 @@ strip -s releases/bash
 echo "= creating bashc"
 (
  cat releases/bash scripts/bashc.sh
- printf "#%020i" $(ls -l scripts/bashc.sh | awk '{print $5}')
+ printf "#%020i" "$(ls -l scripts/bashc.sh | awk '{print $5}')"
 ) > releases/bashc && chmod 755 releases/bashc
 
 echo "= done"
