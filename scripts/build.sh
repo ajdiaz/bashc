@@ -7,7 +7,7 @@
 
 bash_version="4.4"
 bash_patch_level=12
-musl_version="1.1.15"
+musl_version="1.2.1"
 
 platform=$(uname -s)
 
