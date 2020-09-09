@@ -12,7 +12,7 @@ musl_version="1.1.15"
 platform=$(uname -s)
 
 
-pushd "${0%/scripts/build.sh}"
+pushd "${0%/scripts/build.sh}" || exit 1
 
 if [ -d build ]; then
   echo "= removing previous build directory"
@@ -20,7 +20,7 @@ if [ -d build ]; then
 fi
 
 mkdir build # make build directory
-pushd build
+pushd build || exit 1
 
 # download tarballs
 echo "= downloading bash"
@@ -31,12 +31,12 @@ tar -xf bash-${bash_version}.tar.gz
 
 echo "= patching bash"
 bash_patch_prefix=$(echo "bash${bash_version}" | sed -e 's/\.//g')
-pushd bash-${bash_version}
+pushd bash-${bash_version} || exit 1
 for lvl in $(seq $bash_patch_level); do
     curl -L "http://ftp.gnu.org/gnu/bash/bash-${bash_version}-patches/${bash_patch_prefix}-$(printf '%03d' "$lvl")" | patch -p0
 done
 patch -p0 < "../../patch/hack-${bash_version}.diff"
-popd
+popd || exit 1
 
 if [[ "$platform" = "Linux" ]]; then
   echo "= downloading musl"
@@ -50,10 +50,10 @@ if [[ "$platform" = "Linux" ]]; then
 
   install_dir=${working_dir}/musl-install
 
-  pushd musl-${musl_version}
+  pushd musl-${musl_version} || exit 1
   ./configure "--prefix=${install_dir}"
-  make install
-  popd # musl-${musl-version}
+  make install || exit 1
+  popd || exit 1 # musl-${musl-version}
 
   echo "= setting CC to musl-gcc"
   export CC=${working_dir}/musl-install/bin/musl-gcc
@@ -66,14 +66,14 @@ fi
 
 echo "= building bash"
 
-pushd bash-${bash_version}
+pushd bash-${bash_version} || exit 1
 CFLAGS="$CFLAGS -Os" ./configure --without-bash-malloc
 find . -name "Makefile" -exec sed -i 's:-rdynamic::g' {} \;
 make
 make tests
-popd # bash-${bash_version}
+popd || exit 1 # bash-${bash_version}
 
-popd # build
+popd || exit 1 # build
 
 if [ ! -d releases ]; then
   mkdir releases
@@ -86,6 +86,7 @@ strip -s releases/bash
 echo "= creating bashc"
 (
  cat releases/bash scripts/bashc.sh
+ # shellcheck disable=SC2012
  printf "#%020i" "$(ls -l scripts/bashc.sh | awk '{print $5}')"
 ) > releases/bashc && chmod 755 releases/bashc
 
