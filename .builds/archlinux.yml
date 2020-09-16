@@ -1,6 +1,6 @@
 image: archlinux
 sources:
-  - https://git.st.ht/~ajdiaz/bashc
+  - https://git.sr.ht/~ajdiaz/bashc
 tasks:
   - build: |
       make test
