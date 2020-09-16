@@ -2,5 +2,5 @@ image: archlinux
 sources:
   - https://git.st.ht/~ajdiaz/bashc
 tasks:
-  - build |
+  - build: |
       make test
