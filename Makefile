@@ -6,7 +6,7 @@
 all:
 	@./scripts/build.sh && rm -f ./releases/bash
 
-test: all
+test:
 	@echo -e "#! /bin/bash\necho \"test OK\"" > test.sh
 	./releases/bashc ./test.sh test.bin && \
 		[[ "$$(./test.bin)" == "test OK" ]] && \
