@@ -3,4 +3,4 @@ sources:
   - https://git.sr.ht/~ajdiaz/bashc
 tasks:
   - build: |
-      make test
+      make -C bashc test
