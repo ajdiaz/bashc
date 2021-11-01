@@ -1,8 +1,0 @@
-image: archlinux
-sources:
-  - https://git.sr.ht/~ajdiaz/bashc
-tasks:
-  - build: |
-      make -C bashc
-  - test: |
-      make -C bashc test
