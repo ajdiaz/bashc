@@ -5,8 +5,8 @@
 #
 # For Linux, also builds musl for truly static linking.
 
-bash_version="5.1"
-bash_patch_level=4
+bash_version="5.1.8"
+bash_patch_level="0"
 musl_version="1.2.2"
 
 platform=$(uname -s)
@@ -32,7 +32,7 @@ tar -xf bash-${bash_version}.tar.gz
 echo "= patching bash"
 bash_patch_prefix=$(echo "bash${bash_version}" | sed -e 's/\.//g')
 pushd bash-${bash_version} || exit 1
-for lvl in $(seq $bash_patch_level); do
+for lvl in $(seq "$bash_patch_level"); do
     curl -L "http://ftp.gnu.org/gnu/bash/bash-${bash_version}-patches/${bash_patch_prefix}-$(printf '%03d' "$lvl")" | patch -p0
 done
 patch -p0 < "../../patch/hack-${bash_version}.diff" || exit 1
