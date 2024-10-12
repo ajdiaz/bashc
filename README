@@ -71,4 +71,8 @@ interpreted.
 * The bash script code is concatenated in plain text, so no security here.
 * We cannot use any external dependency for the script unless it was
   previously compiled as builtin.
+* If you call bashc from exec syscall, please use the full path to the
+  binary (prefixing current working directory if needed) to avoid problems
+  during the binary generation. Althoug the generated binary works fine
+  in any path (is script is designed for that), the compilation itself does not.
 
